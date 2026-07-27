@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabaseClient'
 export default function Home() {
   const [posts, setPosts] = useState<any[]>([])
   const [error, setError] = useState<string | null>(null)
+  const [prices, setPrices] = useState<Record<string, { price: number; change: number }>>({})
 
   async function fetchPosts() {
     const { data, error } = await supabase
@@ -26,6 +27,24 @@ export default function Home() {
     return () => { supabase.removeChannel(channel) }
   }, [])
 
+  useEffect(() => {
+    const symbols = new Set<string>()
+    posts.forEach(p => p.post_tickers?.forEach((tk: any) => symbols.add(tk.symbol)))
+
+    symbols.forEach(async (sym) => {
+      if (prices[sym]) return // already fetched
+      try {
+        const res = await fetch(`https://finnhub.io/api/v1/quote?symbol=${sym}&token=${process.env.NEXT_PUBLIC_FINNHUB_KEY}`)
+        const data = await res.json()
+        if (data.c) {
+          setPrices(prev => ({ ...prev, [sym]: { price: data.c, change: data.dp } }))
+        }
+      } catch (e) {
+        // silently skip tickers Finnhub doesn't recognize
+      }
+    })
+  }, [posts])
+
   const stanceColor: any = { bullish: '#2F6B4F', bearish: '#A6432B', neutral: '#8A7429' }
 
   if (error) return <div style={{ padding: 40 }}>Error loading posts: {error}</div>
@@ -41,8 +60,8 @@ export default function Home() {
 
         <div style={{ fontSize: 12.5, color: '#726C5F', fontStyle: 'italic', lineHeight: 1.5, paddingBottom: 16, borderBottom: '1px solid #DCD6C8', marginBottom: 20 }}>
           Not affiliated with, endorsed by, or connected to any analyst named here. Built solely for personal
-          research use. Nothing here is investment advice. Stance tags reflect the site owner's own reading
-          of each post — always check the source link before relying on it.
+          research use. Nothing here is investment advice. Prices are delayed/free-tier data. Stance tags reflect
+          the site owner's own reading of each post — always check the source link before relying on it.
         </div>
 
         {posts.length === 0 && <p style={{ color: '#726C5F' }}>No posts yet — add your first one.</p>}
@@ -58,21 +77,5 @@ export default function Home() {
             <p style={{ fontSize: 15, lineHeight: 1.6, margin: '0 0 10px' }}>{post.summary}</p>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
               <div>
-                {post.post_tickers?.map((tk: any, i: number) => (
-                  <span key={i} style={{
-                    marginRight: 12, fontWeight: 700, fontStyle: 'italic',
-                    color: stanceColor[tk.stance] || '#1A1A1D',
-                    borderBottom: `1px solid ${stanceColor[tk.stance] || '#1A1A1D'}`
-                  }}>
-                    {tk.symbol} · {tk.stance}
-                  </span>
-                ))}
-              </div>
-              <a href={post.url} target="_blank" style={{ fontSize: 11, fontFamily: 'monospace', color: '#1F3350' }}>source ↗</a>
-            </div>
-          </div>
-        ))}
-      </main>
-    </div>
-  )
-}
+                {post.post_tickers?.map((tk:
+                
