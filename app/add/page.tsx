@@ -13,6 +13,12 @@ const analysts = [
 
 type TickerRow = { symbol: string; stance: string }
 
+const inputStyle = {
+  width: '100%', padding: '10px 12px', fontFamily: 'Georgia, serif', fontSize: 14,
+  border: '1px solid #DCD6C8', borderRadius: 4, background: '#FFFFFF', color: '#1A1A1D'
+}
+const labelStyle = { display: 'block', marginBottom: 16, fontSize: 13, color: '#726C5F', fontStyle: 'italic' as const }
+
 export default function AddPost() {
   const [analystId, setAnalystId] = useState('serenity')
   const [url, setUrl] = useState('')
@@ -26,19 +32,12 @@ export default function AddPost() {
     next[i] = { ...next[i], [field]: value }
     setTickers(next)
   }
-
-  function addTickerRow() {
-    setTickers([...tickers, { symbol: '', stance: 'neutral' }])
-  }
-
-  function removeTickerRow(i: number) {
-    setTickers(tickers.filter((_, idx) => idx !== i))
-  }
+  function addTickerRow() { setTickers([...tickers, { symbol: '', stance: 'neutral' }]) }
+  function removeTickerRow(i: number) { setTickers(tickers.filter((_, idx) => idx !== i)) }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setStatus('Saving...')
-
     const postId = 'post-' + Date.now()
     const postedAt = customDate ? new Date(customDate).toISOString() : new Date().toISOString()
 
@@ -46,10 +45,7 @@ export default function AddPost() {
       .from('posts')
       .insert({ id: postId, analyst_id: analystId, url, summary, posted_at: postedAt })
 
-    if (postError) {
-      setStatus('Error: ' + postError.message)
-      return
-    }
+    if (postError) { setStatus('Error: ' + postError.message); return }
 
     for (const t of tickers) {
       if (!t.symbol.trim()) continue
@@ -64,10 +60,7 @@ export default function AddPost() {
         .from('post_tickers')
         .insert({ post_id: postId, symbol: t.symbol.toUpperCase(), stance: t.stance, price_at_call: priceAtCall })
 
-      if (tickerError) {
-        setStatus('Error on ' + t.symbol + ': ' + tickerError.message)
-        return
-      }
+      if (tickerError) { setStatus('Error on ' + t.symbol + ': ' + tickerError.message); return }
     }
 
     setStatus('Saved!')
@@ -75,53 +68,63 @@ export default function AddPost() {
   }
 
   return (
-    <main style={{ maxWidth: 500, margin: '0 auto', padding: 40, fontFamily: 'serif' }}>
-      <h1>Add a Post</h1>
-      <a href="/" style={{ display: 'inline-block', marginBottom: 20 }}>← Back to Analyst Desk</a>
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <label>Analyst
-          <select value={analystId} onChange={e => setAnalystId(e.target.value)} style={{ width: '100%', padding: 8 }}>
-            {analysts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
-          </select>
-        </label>
-        <label>Post URL
-          <input value={url} onChange={e => setUrl(e.target.value)} required style={{ width: '100%', padding: 8 }} />
-        </label>
-        <label>Your Summary
-          <textarea value={summary} onChange={e => setSummary(e.target.value)} required style={{ width: '100%', padding: 8 }} />
-        </label>
-        <label>Date/Time (optional — leave blank to use right now)
-          <input type="datetime-local" value={customDate} onChange={e => setCustomDate(e.target.value)} style={{ width: '100%', padding: 8 }} />
-        </label>
-
-        <div>
-          <div style={{ marginBottom: 6, fontWeight: 600 }}>Tickers</div>
-          {tickers.map((t, i) => (
-            <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-              <input
-                value={t.symbol}
-                onChange={e => updateTicker(i, 'symbol', e.target.value)}
-                placeholder="e.g. GOOGL"
-                style={{ flex: 1, padding: 8 }}
-              />
-              <select value={t.stance} onChange={e => updateTicker(i, 'stance', e.target.value)} style={{ padding: 8 }}>
-                <option value="bullish">Bullish</option>
-                <option value="bearish">Bearish</option>
-                <option value="neutral">Neutral</option>
-              </select>
-              {tickers.length > 1 && (
-                <button type="button" onClick={() => removeTickerRow(i)} style={{ padding: '0 10px' }}>✕</button>
-              )}
-            </div>
-          ))}
-          <button type="button" onClick={addTickerRow} style={{ padding: '6px 10px', cursor: 'pointer' }}>
-            + Add another ticker
-          </button>
+    <div style={{ background: '#F7F5F0', minHeight: '100vh' }}>
+      <div style={{ height: 3, background: 'linear-gradient(90deg, #A9873F, #C9AE6F, #A9873F)' }} />
+      <main style={{ maxWidth: 560, margin: '0 auto', padding: '30px 24px 70px', fontFamily: 'Georgia, serif', color: '#1A1A1D' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', borderBottom: '1px solid #DCD6C8', paddingBottom: 16, marginBottom: 28 }}>
+          <h1 style={{ fontSize: 24, color: '#1F3350', margin: 0 }}>Add a Post</h1>
+          <a href="/" style={{ fontSize: 13, color: '#1F3350', fontStyle: 'italic' }}>← Analyst Desk</a>
         </div>
 
-        <button type="submit" style={{ padding: 10, cursor: 'pointer', marginTop: 8 }}>Save Post</button>
-        {status && <p>{status}</p>}
-      </form>
-    </main>
+        <form onSubmit={handleSubmit}>
+          <label style={labelStyle}>
+            Analyst
+            <select value={analystId} onChange={e => setAnalystId(e.target.value)} style={{ ...inputStyle, marginTop: 6 }}>
+              {analysts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+            </select>
+          </label>
+
+          <label style={labelStyle}>
+            Post URL
+            <input value={url} onChange={e => setUrl(e.target.value)} required style={{ ...inputStyle, marginTop: 6 }} />
+          </label>
+
+          <label style={labelStyle}>
+            Your Summary
+            <textarea value={summary} onChange={e => setSummary(e.target.value)} required rows={4} style={{ ...inputStyle, marginTop: 6, fontFamily: 'Georgia, serif' }} />
+          </label>
+
+          <label style={labelStyle}>
+            Date / Time — leave blank to use right now
+            <input type="datetime-local" value={customDate} onChange={e => setCustomDate(e.target.value)} style={{ ...inputStyle, marginTop: 6 }} />
+          </label>
+
+          <div style={{ marginBottom: 20 }}>
+            <div style={{ fontSize: 13, color: '#726C5F', fontStyle: 'italic', marginBottom: 10 }}>Tickers</div>
+            {tickers.map((t, i) => (
+              <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                <input value={t.symbol} onChange={e => updateTicker(i, 'symbol', e.target.value)} placeholder="e.g. GOOGL" style={{ ...inputStyle, flex: 1 }} />
+                <select value={t.stance} onChange={e => updateTicker(i, 'stance', e.target.value)} style={{ ...inputStyle, width: 130 }}>
+                  <option value="bullish">Bullish</option>
+                  <option value="bearish">Bearish</option>
+                  <option value="neutral">Neutral</option>
+                </select>
+                {tickers.length > 1 && (
+                  <button type="button" onClick={() => removeTickerRow(i)} style={{ padding: '0 12px', border: '1px solid #DCD6C8', background: '#FFFFFF', borderRadius: 4, cursor: 'pointer', color: '#A6432B' }}>✕</button>
+                )}
+              </div>
+            ))}
+            <button type="button" onClick={addTickerRow} style={{ padding: '8px 14px', border: '1px solid #1F3350', background: 'transparent', color: '#1F3350', borderRadius: 4, cursor: 'pointer', fontStyle: 'italic', fontSize: 13 }}>
+              + Add another ticker
+            </button>
+          </div>
+
+          <button type="submit" style={{ padding: '12px 24px', background: '#1F3350', color: '#F7F5F0', border: 'none', borderRadius: 4, cursor: 'pointer', fontSize: 14, fontFamily: 'Georgia, serif' }}>
+            Save Post
+          </button>
+          {status && <p style={{ marginTop: 14, fontStyle: 'italic', color: status.startsWith('Error') ? '#A6432B' : '#2F6B4F' }}>{status}</p>}
+        </form>
+      </main>
+    </div>
   )
 }
