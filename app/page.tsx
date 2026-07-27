@@ -53,7 +53,10 @@ export default function Home() {
       <main style={{ maxWidth: 700, margin: '0 auto', padding: '30px 24px 70px', fontFamily: 'Georgia, serif', color: '#1A1A1D' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', borderBottom: '1px solid #DCD6C8', paddingBottom: 16, marginBottom: 20 }}>
           <h1 style={{ fontSize: 24, color: '#1F3350', margin: 0 }}>Analyst Desk</h1>
-          <a href="/add" style={{ fontSize: 13, color: '#1F3350', fontStyle: 'italic' }}>+ Add a Post</a>
+          <div style={{ display: 'flex', gap: 16 }}>
+            <a href="/track" style={{ fontSize: 13, color: '#1F3350', fontStyle: 'italic' }}>Track Record</a>
+            <a href="/add" style={{ fontSize: 13, color: '#1F3350', fontStyle: 'italic' }}>+ Add a Post</a>
+          </div>
         </div>
 
         <div style={{ fontSize: 12.5, color: '#726C5F', fontStyle: 'italic', lineHeight: 1.5, paddingBottom: 16, borderBottom: '1px solid #DCD6C8', marginBottom: 20 }}>
@@ -71,12 +74,12 @@ export default function Home() {
               </span>
             </div>
             <p style={{ fontSize: 15, lineHeight: 1.6, margin: '0 0 10px' }}>{post.summary}</p>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
-              <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 10 }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 16px' }}>
                 {post.post_tickers?.map((tk: any, i: number) => {
                   const q = prices[tk.symbol]
                   return (
-                    <span key={i} style={{ marginRight: 14, fontWeight: 700, fontStyle: 'italic', color: stanceColor[tk.stance] || '#1A1A1D', borderBottom: `1px solid ${stanceColor[tk.stance] || '#1A1A1D'}` }}>
+                    <span key={i} style={{ whiteSpace: 'nowrap', fontWeight: 700, fontStyle: 'italic', color: stanceColor[tk.stance] || '#1A1A1D', borderBottom: `1px solid ${stanceColor[tk.stance] || '#1A1A1D'}` }}>
                       {tk.symbol} · {tk.stance}
                       {q && q.price > 0 && (
                         <span style={{ fontFamily: 'monospace', fontStyle: 'normal', marginLeft: 6, fontSize: 12 }}>
@@ -92,7 +95,7 @@ export default function Home() {
                   )
                 })}
               </div>
-              <a href={post.url} target="_blank" style={{ fontSize: 11, fontFamily: 'monospace', color: '#1F3350' }}>source ↗</a>
+              <a href={post.url} target="_blank" style={{ fontSize: 11, fontFamily: 'monospace', color: '#1F3350', whiteSpace: 'nowrap' }}>source ↗</a>
             </div>
           </div>
         ))}
