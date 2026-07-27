@@ -20,12 +20,26 @@ const inputStyle = {
 const labelStyle = { display: 'block', marginBottom: 16, fontSize: 13, color: '#726C5F', fontStyle: 'italic' as const }
 
 export default function AddPost() {
+  const [unlocked, setUnlocked] = useState(false)
+  const [passwordInput, setPasswordInput] = useState('')
+  const [passwordError, setPasswordError] = useState('')
+
   const [analystId, setAnalystId] = useState('serenity')
   const [url, setUrl] = useState('')
   const [summary, setSummary] = useState('')
   const [customDate, setCustomDate] = useState('')
   const [tickers, setTickers] = useState<TickerRow[]>([{ symbol: '', stance: 'neutral' }])
   const [status, setStatus] = useState('')
+
+  function checkPassword(e: React.FormEvent) {
+    e.preventDefault()
+    if (passwordInput === process.env.NEXT_PUBLIC_ADD_PASSWORD) {
+      setUnlocked(true)
+      setPasswordError('')
+    } else {
+      setPasswordError('Incorrect password.')
+    }
+  }
 
   function updateTicker(i: number, field: 'symbol' | 'stance', value: string) {
     const next = [...tickers]
@@ -65,6 +79,27 @@ export default function AddPost() {
 
     setStatus('Saved!')
     setUrl(''); setSummary(''); setCustomDate(''); setTickers([{ symbol: '', stance: 'neutral' }])
+  }
+
+  if (!unlocked) {
+    return (
+      <div style={{ background: '#F7F5F0', minHeight: '100vh' }}>
+        <div style={{ height: 3, background: 'linear-gradient(90deg, #A9873F, #C9AE6F, #A9873F)' }} />
+        <main style={{ maxWidth: 400, margin: '0 auto', padding: '30px 24px 70px', fontFamily: 'Georgia, serif', color: '#1A1A1D' }}>
+          <h1 style={{ fontSize: 24, color: '#1F3350', marginBottom: 20 }}>Add a Post</h1>
+          <form onSubmit={checkPassword}>
+            <label style={labelStyle}>
+              Password
+              <input type="password" value={passwordInput} onChange={e => setPasswordInput(e.target.value)} style={{ ...inputStyle, marginTop: 6 }} />
+            </label>
+            <button type="submit" style={{ padding: '10px 20px', background: '#1F3350', color: '#F7F5F0', border: 'none', borderRadius: 4, cursor: 'pointer', fontFamily: 'Georgia, serif' }}>
+              Unlock
+            </button>
+            {passwordError && <p style={{ color: '#A6432B', fontStyle: 'italic', marginTop: 12 }}>{passwordError}</p>}
+          </form>
+        </main>
+      </div>
+    )
   }
 
   return (
