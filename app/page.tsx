@@ -7,6 +7,7 @@ export default function Home() {
   const [posts, setPosts] = useState<any[]>([])
   const [error, setError] = useState<string | null>(null)
   const [prices, setPrices] = useState<Record<string, { price: number; change: number }>>({})
+  const [search, setSearch] = useState('')
 
   async function fetchPosts() {
     const { data, error } = await supabase
@@ -45,13 +46,19 @@ export default function Home() {
 
   const stanceColor: any = { bullish: '#2F6B4F', bearish: '#A6432B', neutral: '#8A7429' }
 
+  const filteredPosts = posts.filter(post => {
+    if (!search.trim()) return true
+    const q = search.trim().toUpperCase()
+    return post.post_tickers?.some((tk: any) => tk.symbol.includes(q))
+  })
+
   if (error) return <div style={{ padding: 40 }}>Error loading posts: {error}</div>
 
   return (
     <div style={{ background: '#F7F5F0', minHeight: '100vh' }}>
       <div style={{ height: 3, background: 'linear-gradient(90deg, #A9873F, #C9AE6F, #A9873F)' }} />
       <main style={{ maxWidth: 700, margin: '0 auto', padding: '30px 24px 70px', fontFamily: 'Georgia, serif', color: '#1A1A1D' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', borderBottom: '1px solid #DCD6C8', paddingBottom: 16, marginBottom: 20 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', borderBottom: '1px solid #DCD6C8', paddingBottom: 16, marginBottom: 16 }}>
           <h1 style={{ fontSize: 24, color: '#1F3350', margin: 0 }}>Analyst Desk</h1>
           <div style={{ display: 'flex', gap: 16 }}>
             <a href="/track" style={{ fontSize: 13, color: '#1F3350', fontStyle: 'italic' }}>Track Record</a>
@@ -59,13 +66,28 @@ export default function Home() {
           </div>
         </div>
 
+        <input
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          placeholder="Search by ticker — e.g. NVDA"
+          style={{
+            width: '100%', padding: '10px 12px', fontFamily: 'Georgia, serif', fontSize: 14,
+            border: '1px solid #DCD6C8', borderRadius: 4, background: '#FFFFFF', color: '#1A1A1D',
+            marginBottom: 20
+          }}
+        />
+
         <div style={{ fontSize: 12.5, color: '#726C5F', fontStyle: 'italic', lineHeight: 1.5, paddingBottom: 16, borderBottom: '1px solid #DCD6C8', marginBottom: 20 }}>
           Not affiliated with, endorsed by, or connected to any analyst named here. Built solely for personal research use. Nothing here is investment advice. Prices are delayed/free-tier data and may be unavailable for smaller tickers. Stance tags reflect the site owner's own reading of each post — always check the source link before relying on it.
         </div>
 
-        {posts.length === 0 && <p style={{ color: '#726C5F' }}>No posts yet — add your first one.</p>}
+        {filteredPosts.length === 0 && (
+          <p style={{ color: '#726C5F' }}>
+            {posts.length === 0 ? 'No posts yet — add your first one.' : 'No posts match that ticker.'}
+          </p>
+        )}
 
-        {posts.map((post: any) => (
+        {filteredPosts.map((post: any) => (
           <div key={post.id} style={{ padding: '16px 0', borderBottom: '1px solid #DCD6C8' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
               <span style={{ fontWeight: 700 }}>{post.analysts?.display_name}</span>
