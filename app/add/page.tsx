@@ -50,6 +50,7 @@ export default function AddPost() {
   return (
     <main style={{ maxWidth: 500, margin: '0 auto', padding: 40, fontFamily: 'serif' }}>
       <h1>Add a Post</h1>
+      <a href="/" style={{ display: 'inline-block', marginBottom: 20 }}>← Back to Analyst Desk</a>
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         <label>Analyst
           <select value={analystId} onChange={e => setAnalystId(e.target.value)} style={{ width: '100%', padding: 8 }}>
@@ -78,4 +79,3 @@ export default function AddPost() {
     </main>
   )
 }
-

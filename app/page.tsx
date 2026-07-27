@@ -34,6 +34,7 @@ export default function Home() {
   return (
     <main style={{ maxWidth: 700, margin: '0 auto', padding: 40, fontFamily: 'serif' }}>
       <h1>Analyst Desk</h1>
+      <a href="/add" style={{ display: 'inline-block', marginBottom: 20 }}>+ Add a Post</a>
       {posts.map((post: any) => (
         <div key={post.id} style={{ borderBottom: '1px solid #ddd', padding: '16px 0' }}>
           <div style={{ fontSize: 13, color: '#666' }}>
@@ -53,4 +54,3 @@ export default function Home() {
     </main>
   )
 }
-
