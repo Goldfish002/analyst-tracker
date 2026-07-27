@@ -17,6 +17,7 @@ export default function AddPost() {
   const [analystId, setAnalystId] = useState('serenity')
   const [url, setUrl] = useState('')
   const [summary, setSummary] = useState('')
+  const [customDate, setCustomDate] = useState('')
   const [tickers, setTickers] = useState<TickerRow[]>([{ symbol: '', stance: 'neutral' }])
   const [status, setStatus] = useState('')
 
@@ -39,10 +40,11 @@ export default function AddPost() {
     setStatus('Saving...')
 
     const postId = 'post-' + Date.now()
+    const postedAt = customDate ? new Date(customDate).toISOString() : new Date().toISOString()
 
     const { error: postError } = await supabase
       .from('posts')
-      .insert({ id: postId, analyst_id: analystId, url, summary })
+      .insert({ id: postId, analyst_id: analystId, url, summary, posted_at: postedAt })
 
     if (postError) {
       setStatus('Error: ' + postError.message)
@@ -69,7 +71,7 @@ export default function AddPost() {
     }
 
     setStatus('Saved!')
-    setUrl(''); setSummary(''); setTickers([{ symbol: '', stance: 'neutral' }])
+    setUrl(''); setSummary(''); setCustomDate(''); setTickers([{ symbol: '', stance: 'neutral' }])
   }
 
   return (
@@ -87,6 +89,9 @@ export default function AddPost() {
         </label>
         <label>Your Summary
           <textarea value={summary} onChange={e => setSummary(e.target.value)} required style={{ width: '100%', padding: 8 }} />
+        </label>
+        <label>Date/Time (optional — leave blank to use right now)
+          <input type="datetime-local" value={customDate} onChange={e => setCustomDate(e.target.value)} style={{ width: '100%', padding: 8 }} />
         </label>
 
         <div>
