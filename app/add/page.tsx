@@ -11,13 +11,28 @@ const analysts = [
   { id: 'elliott', name: 'Bob Elliott' },
 ]
 
+type TickerRow = { symbol: string; stance: string }
+
 export default function AddPost() {
   const [analystId, setAnalystId] = useState('serenity')
   const [url, setUrl] = useState('')
   const [summary, setSummary] = useState('')
-  const [symbol, setSymbol] = useState('')
-  const [stance, setStance] = useState('neutral')
+  const [tickers, setTickers] = useState<TickerRow[]>([{ symbol: '', stance: 'neutral' }])
   const [status, setStatus] = useState('')
+
+  function updateTicker(i: number, field: 'symbol' | 'stance', value: string) {
+    const next = [...tickers]
+    next[i] = { ...next[i], [field]: value }
+    setTickers(next)
+  }
+
+  function addTickerRow() {
+    setTickers([...tickers, { symbol: '', stance: 'neutral' }])
+  }
+
+  function removeTickerRow(i: number) {
+    setTickers(tickers.filter((_, idx) => idx !== i))
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -34,26 +49,27 @@ export default function AddPost() {
       return
     }
 
-    let priceAtCall = null
-    try {
-      const res = await fetch(`https://finnhub.io/api/v1/quote?symbol=${symbol.toUpperCase()}&token=${process.env.NEXT_PUBLIC_FINNHUB_KEY}`)
-      const data = await res.json()
-      if (data.c && data.c > 0) priceAtCall = data.c
-    } catch (e) {
-      // if price lookup fails, we still save the post, just without a price
-    }
+    for (const t of tickers) {
+      if (!t.symbol.trim()) continue
+      let priceAtCall = null
+      try {
+        const res = await fetch(`https://finnhub.io/api/v1/quote?symbol=${t.symbol.toUpperCase()}&token=${process.env.NEXT_PUBLIC_FINNHUB_KEY}`)
+        const data = await res.json()
+        if (data.c && data.c > 0) priceAtCall = data.c
+      } catch (e) {}
 
-    const { error: tickerError } = await supabase
-      .from('post_tickers')
-      .insert({ post_id: postId, symbol: symbol.toUpperCase(), stance, price_at_call: priceAtCall })
+      const { error: tickerError } = await supabase
+        .from('post_tickers')
+        .insert({ post_id: postId, symbol: t.symbol.toUpperCase(), stance: t.stance, price_at_call: priceAtCall })
 
-    if (tickerError) {
-      setStatus('Error: ' + tickerError.message)
-      return
+      if (tickerError) {
+        setStatus('Error on ' + t.symbol + ': ' + tickerError.message)
+        return
+      }
     }
 
     setStatus('Saved!')
-    setUrl(''); setSummary(''); setSymbol('')
+    setUrl(''); setSummary(''); setTickers([{ symbol: '', stance: 'neutral' }])
   }
 
   return (
@@ -72,17 +88,33 @@ export default function AddPost() {
         <label>Your Summary
           <textarea value={summary} onChange={e => setSummary(e.target.value)} required style={{ width: '100%', padding: 8 }} />
         </label>
-        <label>Ticker Symbol
-          <input value={symbol} onChange={e => setSymbol(e.target.value)} required placeholder="e.g. NVDA" style={{ width: '100%', padding: 8 }} />
-        </label>
-        <label>Stance
-          <select value={stance} onChange={e => setStance(e.target.value)} style={{ width: '100%', padding: 8 }}>
-            <option value="bullish">Bullish</option>
-            <option value="bearish">Bearish</option>
-            <option value="neutral">Neutral</option>
-          </select>
-        </label>
-        <button type="submit" style={{ padding: 10, cursor: 'pointer' }}>Save Post</button>
+
+        <div>
+          <div style={{ marginBottom: 6, fontWeight: 600 }}>Tickers</div>
+          {tickers.map((t, i) => (
+            <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+              <input
+                value={t.symbol}
+                onChange={e => updateTicker(i, 'symbol', e.target.value)}
+                placeholder="e.g. GOOGL"
+                style={{ flex: 1, padding: 8 }}
+              />
+              <select value={t.stance} onChange={e => updateTicker(i, 'stance', e.target.value)} style={{ padding: 8 }}>
+                <option value="bullish">Bullish</option>
+                <option value="bearish">Bearish</option>
+                <option value="neutral">Neutral</option>
+              </select>
+              {tickers.length > 1 && (
+                <button type="button" onClick={() => removeTickerRow(i)} style={{ padding: '0 10px' }}>✕</button>
+              )}
+            </div>
+          ))}
+          <button type="button" onClick={addTickerRow} style={{ padding: '6px 10px', cursor: 'pointer' }}>
+            + Add another ticker
+          </button>
+        </div>
+
+        <button type="submit" style={{ padding: 10, cursor: 'pointer', marginTop: 8 }}>Save Post</button>
         {status && <p>{status}</p>}
       </form>
     </main>
