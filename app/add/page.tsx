@@ -1,4 +1,3 @@
-cat > app/add/page.tsx << 'ADDEOF'
 'use client'
 
 import { useState } from 'react'
@@ -167,4 +166,3 @@ export default function AddPost() {
     </div>
   )
 }
-ADDEOF
