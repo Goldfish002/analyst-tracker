@@ -77,5 +77,26 @@ export default function Home() {
             <p style={{ fontSize: 15, lineHeight: 1.6, margin: '0 0 10px' }}>{post.summary}</p>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
               <div>
-                {post.post_tickers?.map((tk:
-                
+                {post.post_tickers?.map((tk: any, i: number) => {
+                  const q = prices[tk.symbol]
+                  return (
+                    <span key={i} style={{ marginRight: 14, fontWeight: 700, fontStyle: 'italic', color: stanceColor[tk.stance] || '#1A1A1D', borderBottom: `1px solid ${stanceColor[tk.stance] || '#1A1A1D'}` }}>
+                      {tk.symbol} · {tk.stance}
+                      {q && (
+                        <span style={{ fontFamily: 'monospace', fontStyle: 'normal', marginLeft: 6, fontSize: 12 }}>
+                          ${q.price.toFixed(2)} ({q.change >= 0 ? '+' : ''}{q.change.toFixed(2)}%)
+                        </span>
+                      )}
+                    </span>
+                  )
+                })}
+              </div>
+              <a href={post.url} target="_blank" style={{ fontSize: 11, fontFamily: 'monospace', color: '#1F3350' }}>source ↗</a>
+            </div>
+          </div>
+        ))}
+      </main>
+    </div>
+  )
+}
+
