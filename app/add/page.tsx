@@ -34,9 +34,18 @@ export default function AddPost() {
       return
     }
 
+    let priceAtCall = null
+    try {
+      const res = await fetch(`https://finnhub.io/api/v1/quote?symbol=${symbol.toUpperCase()}&token=${process.env.NEXT_PUBLIC_FINNHUB_KEY}`)
+      const data = await res.json()
+      if (data.c && data.c > 0) priceAtCall = data.c
+    } catch (e) {
+      // if price lookup fails, we still save the post, just without a price
+    }
+
     const { error: tickerError } = await supabase
       .from('post_tickers')
-      .insert({ post_id: postId, symbol: symbol.toUpperCase(), stance })
+      .insert({ post_id: postId, symbol: symbol.toUpperCase(), stance, price_at_call: priceAtCall })
 
     if (tickerError) {
       setStatus('Error: ' + tickerError.message)
