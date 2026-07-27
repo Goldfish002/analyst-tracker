@@ -1,3 +1,4 @@
+cat > app/add/page.tsx << 'ADDEOF'
 'use client'
 
 import { useState } from 'react'
@@ -86,7 +87,10 @@ export default function AddPost() {
       <div style={{ background: '#F7F5F0', minHeight: '100vh' }}>
         <div style={{ height: 3, background: 'linear-gradient(90deg, #A9873F, #C9AE6F, #A9873F)' }} />
         <main style={{ maxWidth: 400, margin: '0 auto', padding: '30px 24px 70px', fontFamily: 'Georgia, serif', color: '#1A1A1D' }}>
-          <h1 style={{ fontSize: 24, color: '#1F3350', marginBottom: 20 }}>Add a Post</h1>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 20 }}>
+            <h1 style={{ fontSize: 24, color: '#1F3350', margin: 0 }}>Add a Post</h1>
+            <a href="/" style={{ fontSize: 13, color: '#1F3350', fontStyle: 'italic' }}>← Analyst Desk</a>
+          </div>
           <form onSubmit={checkPassword}>
             <label style={labelStyle}>
               Password
@@ -163,3 +167,4 @@ export default function AddPost() {
     </div>
   )
 }
+ADDEOF
